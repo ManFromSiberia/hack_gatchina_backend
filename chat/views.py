@@ -49,7 +49,10 @@ def get_address_from_coordinates(coordinates):
     yandex_address_array = geocode_yandex.address.split(',')
     street = yandex_address_array[-2].strip()
     house = yandex_address_array[-1].strip()
-    city = yandex_address_array[1].strip()
+    if 'область' in yandex_address_array[1].strip():
+        city = yandex_address_array[2].strip()
+    else:
+        city = yandex_address_array[1].strip()
     geocode_mapquest = geocoder.mapquest(
         coordinates,
         method='reverse',
