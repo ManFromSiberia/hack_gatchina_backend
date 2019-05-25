@@ -120,6 +120,6 @@ from celery.schedules import crontab
 CELERY_BEAT_SCHEDULE = {
     'check_news': {
         'task': 'parser.tasks.check_news',
-        'schedule': crontab(minute='*/15'),
+        'schedule': crontab(minute='*/1'),
     },
 }

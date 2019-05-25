@@ -19,8 +19,8 @@ class Parser:
     def __get_news_data(self, html, news_id):
         soup = BeautifulSoup(html, 'lxml')
         content = soup.find('div', class_='inCenter')
-        title = content.find('h1', class_='padd_b20').text
-        text = content.find('div', class_='F17').text
+        title = content.find('h1', class_='padd_b20').text.strip()
+        text = content.find('div', class_='F17').text.strip()
         adresses = self.__get_address(text)
         return {'title': title, 'text': text, 'news_id': news_id, 'addresses': adresses}
 
