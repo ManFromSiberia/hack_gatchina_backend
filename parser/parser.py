@@ -84,3 +84,14 @@ class Parser:
             facts = [_.fact.as_json for _ in matches]
             show_markup(line, spans)
             print(format_json(facts))
+
+    def demo(self):
+        links = [
+            '/events/news/?id=5183',
+            '/events/news/?id=5184',
+            '/events/news/?id=5185',
+            '/events/news/?id=5186',
+            '/events/news/?id=5187',
+        ]
+        for link in links:
+            yield self.__get_news_data(self.__get_html(self.url + link), self.__get_news_id(link))
