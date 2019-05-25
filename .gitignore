@@ -1,0 +1,9 @@
+*.egg-info
+*.pot
+*.py[co]
+.tox/
+.idea/*
+__pycache__
+MANIFEST
+.DS_Store
+.vscode/
