@@ -19,17 +19,24 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'users.User'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+
 # Application definition
 
 INSTALLED_APPS = [
+    'apps.SuitConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'mapwidgets',
     'rest_framework',
     'users',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -110,8 +117,20 @@ REST_FRAMEWORK = {
     'PAGE_SIZE':
     50,
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
 }
+
+MAP_WIDGETS = {
+    "GooglePointFieldWidget": (
+        ("zoom", 15),
+        ("mapCenterLocationName", "Санкт-Петербург"),
+        ("GooglePlaceAutocompleteOptions", {
+         'componentRestrictions': {'country': 'ru'}}),
+        ("markerFitZoom", 12),
+    ),
+    "GOOGLE_MAP_API_KEY": "AIzaSyAYCZGof7SigzxC5ko7HEJMFRBpEqS1j2s"
+}
+GOOGLE_MAP_API_KEY = "AIzaSyAYCZGof7SigzxC5ko7HEJMFRBpEqS1j2s"
+
