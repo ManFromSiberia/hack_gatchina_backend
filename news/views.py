@@ -14,7 +14,6 @@ class NewsUpdateView(APIView):
             links = []
             if news.address:
                 for address in news.address:
-                    print(address)
                     if 'ул' in address:
                         try:
                             geocode_yandex = geocoder.yandex(
