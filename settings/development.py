@@ -5,7 +5,7 @@ SECRET_KEY = ''
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': '',
         'USER': '',
         'PASSWORD': '',
@@ -13,5 +13,8 @@ DATABASES = {
         'PORT': '',
     }
 }
-TELEGRAM_API_ID = 667537
-TELEGRAM_API_HASH = '3173159e92cfd7f0b18ab8ec88f975c7'
+TELEGRAM_API_ID = ''
+TELEGRAM_API_HASH = ''
+TELEGRAM_BOT_TOKEN = ''
+YANDEX_MAP_KEY = ''
+MAPQUEST_MAP_KEY = ''
