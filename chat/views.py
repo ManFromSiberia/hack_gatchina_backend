@@ -14,6 +14,7 @@ from telethon.tl.types import ChatAdminRights
 
 from chat.models import Chat
 from chat.serializers import ChatDetailSerializer
+from news.views import get_address_from_coordinates_spb, get_address_from_coordinates_gtn
 
 
 def get_chats_by_address(address, is_private_house=None):
@@ -29,57 +30,63 @@ def get_chats_by_address(address, is_private_house=None):
     return result
 
 
-def get_address_from_coordinates(coordinates):
-    geocode_yandex = geocoder.yandex(
-        coordinates,
-        method='reverse',
-        kind='district',
-        lang='RU',
-        key=settings.YANDEX_MAP_KEY
-    )
-    yandex_address_array = geocode_yandex.address.split(',')
-    district = ''
-    locality = ''
-    for address_item in yandex_address_array:
-        if 'район' in address_item:
-            district = address_item.replace('район', '').strip()
-        elif 'муниципальный округ' in address_item:
-            locality = address_item.replace('муниципальный округ', '').strip()
-
-    geocode_yandex = geocoder.yandex(
-        coordinates,
-        method='reverse',
-        kind='house',
-        lang='RU',
-        key=settings.YANDEX_MAP_KEY
-    )
-
-    yandex_address_array = geocode_yandex.address.split(',')
-    street = yandex_address_array[-2].strip()
-    house = yandex_address_array[-1].strip()
-    if 'область' in yandex_address_array[1].strip():
-        city = yandex_address_array[2].strip()
-    else:
-        city = yandex_address_array[1].strip()
-    geocode_mapquest = geocoder.mapquest(
-        coordinates,
-        method='reverse',
-        key=settings.MAPQUEST_MAP_KEY
-    )
-    postal = geocode_mapquest.postal
-    return {
-        'district': district,
-        'locality': locality,
-        'postal': postal,
-        'street': street,
-        'house': house,
-        'city': city
-    }
+# def get_address_from_coordinates(coordinates):
+#     geocode_yandex = geocoder.yandex(
+#         coordinates,
+#         method='reverse',
+#         kind='district',
+#         lang='RU',
+#         key=settings.YANDEX_MAP_KEY
+#     )
+#     yandex_address_array = geocode_yandex.address.split(',')
+#     district = ''
+#     locality = ''
+#     for address_item in yandex_address_array:
+#         if 'район' in address_item:
+#             district = address_item.replace('район', '').strip()
+#         elif 'муниципальный округ' in address_item:
+#             locality = address_item.replace('муниципальный округ', '').strip()
+#
+#     geocode_yandex = geocoder.yandex(
+#         coordinates,
+#         method='reverse',
+#         kind='house',
+#         lang='RU',
+#         key=settings.YANDEX_MAP_KEY
+#     )
+#
+#     yandex_address_array = geocode_yandex.address.split(',')
+#     street = yandex_address_array[-2].strip()
+#     house = yandex_address_array[-1].strip()
+#     if 'область' in yandex_address_array[1].strip():
+#         city = yandex_address_array[2].strip()
+#     else:
+#         city = yandex_address_array[1].strip()
+#     geocode_mapquest = geocoder.mapquest(
+#         coordinates,
+#         method='reverse',
+#         key=settings.MAPQUEST_MAP_KEY
+#     )
+#     postal = geocode_mapquest.postal
+#     return {
+#         'district': district,
+#         'locality': locality,
+#         'postal': postal,
+#         'street': street,
+#         'house': house,
+#         'city': city
+#     }
 
 
 async def create_channel(chat_name):
-    client = TelegramClient('allmemes_app', settings.TELEGRAM_API_ID, settings.TELEGRAM_API_HASH)
+    client = TelegramClient(
+        'allmemes_app',
+        settings.TELEGRAM_API_ID,
+        settings.TELEGRAM_API_HASH,
+        flood_sleep_threshold=20
+    )
     # await client.start()
+    # return
     await client.connect()
     channel = await client(CreateChannelRequest(
         chat_name,
@@ -115,13 +122,23 @@ async def create_channel(chat_name):
     }
 
 
+def get_address_without_problem(coordinates):
+    try:
+        address = get_address_from_coordinates_spb(coordinates)
+    except:
+        address = get_address_from_coordinates_gtn(coordinates)
+    return address
+
+
 class ChatsFromCoordinatesView(APIView):
     def post(self, request, *args, **kwargs):
         coordinates = request.data.get('coordinates', None)
         is_private_house = request.data.get('is_private_house', None)
 
         if coordinates:
-            address = get_address_from_coordinates(coordinates)
+
+            address = get_address_without_problem(coordinates)
+
             chats = ChatDetailSerializer(get_chats_by_address(address, is_private_house), many=True).data
             return Response(chats)
         else:
@@ -138,7 +155,7 @@ class CreateNewChatView(APIView):
         social_network = request.data.get('social_network', -1)
 
         if coordinates and social_network != -1:
-            address = get_address_from_coordinates(coordinates)
+            address = get_address_without_problem(coordinates)
 
             if not is_private_house:
                 chat_name = f"Чат {address.get('street')}, {address.get('house')}"

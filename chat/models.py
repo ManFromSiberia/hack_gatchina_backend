@@ -20,7 +20,9 @@ class Chat(models.Model):
     )
     city_district = models.CharField(
         'City district',
-        max_length=255
+        max_length=255,
+        null=True,
+        blank=True
     )
     postal_code = models.IntegerField(
         'Postal code',
