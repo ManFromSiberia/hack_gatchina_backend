@@ -4,46 +4,29 @@ from rest_framework.views import APIView
 
 from chat.models import Chat
 from news.models import News
+from settings import development as settings
 
 
 class NewsUpdateView(APIView):
     def get(self, request, *args, **kwargs):
+        towns = ['Гатчина', 'Санкт-Петербург']
         result = []
         new_news = News.objects.filter(is_new=True)
         for news in new_news:
             links = []
             if news.address:
                 for address in news.address:
-                    if 'ул' in address:
-                        try:
-                            geocode_yandex = geocoder.yandex(
-                                address,
-                                method='reverse',
-                                kind='house',
-                                lang='RU',
-                                key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
-                            )
-                            lat = float(geocode_yandex.lat)
-                            lng = float(geocode_yandex.lng)
-                            adrs = get_address_from_coordinates([lat, lng], False)
-                        except ValueError:
-                            continue
-                    else:
-                        geocode_yandex = geocoder.yandex(
-                            address,
-                            method='reverse',
-                            kind='locality',
-                            lang='RU',
-                            key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
-                        )
-                        lat = float(geocode_yandex.lat)
-                        lng = float(geocode_yandex.lng)
-                        adrs = get_address_from_coordinates([lat, lng], True)
+                    if towns[0] in address:
+                        crd = get_coordinates_from_address_gtn(address)
+                        adrs = get_address_from_coordinates_gtn(crd)
+                    elif towns[1] in address:
+                        crd = get_coordinates_from_address_spb(address)
+                        adrs = get_address_from_coordinates_spb(crd)
                     chats = Chat.objects.all()
                     try:
                         link = chats.filter(city=adrs.get('city'), street=adrs.get('street'),
                                             house_number=adrs.get('house')).values('chat_id')
-                    except:
+                    except AttributeError:
                         link = chats.filter(city=adrs.get('city')).values('chat_id')
                     links = link
             result.append({
@@ -57,33 +40,92 @@ class NewsUpdateView(APIView):
         return Response(result)
 
 
-def get_address_from_coordinates(coordinates, is_city):
-    if is_city:
+def get_coordinates_from_address_spb(address):
+    kinds = ['house', 'district', 'locality']
+    for kind in kinds:
         geocode_yandex = geocoder.yandex(
-            coordinates,
+            address,
             method='reverse',
-            kind='locality',
+            kind=kind,
+            lang='RU',
+            key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
+        )
+        try:
+            lat = float(geocode_yandex.lat)
+            lng = float(geocode_yandex.lng)
+        except:
+            continue
+        return [lat, lng]
+
+
+def get_coordinates_from_address_gtn(address):
+    kinds = ['house', 'locality']
+    for kind in kinds:
+        geocode_yandex = geocoder.yandex(
+            address,
+            method='reverse',
+            kind=kind,
+            lang='RU',
+            key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
+        )
+        try:
+            lat = float(geocode_yandex.lat)
+            lng = float(geocode_yandex.lng)
+        except:
+            continue
+        return [lat, lng]
+
+
+def get_address_from_coordinates_gtn(crd):
+    kinds = ['house', 'locality']
+    for kind in kinds:
+        geocode_yandex = geocoder.yandex(
+            crd,
+            method='reverse',
+            kind=kind,
             lang='RU',
             key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
         )
         yandex_address_array = geocode_yandex.address.split(',')
-        locality = yandex_address_array[2]
-        street = ''
-        house = ''
-    else:
+        if len(yandex_address_array) > 3:
+            result = {
+                'city': yandex_address_array[2],
+                'street': yandex_address_array[3],
+                'house': yandex_address_array[4],
+            }
+        else:
+            result = {
+                'city': yandex_address_array[2],
+            }
+        return result
+
+
+def get_address_from_coordinates_spb(crd):
+    kinds = ['house', 'district', 'locality']
+    result = {}
+    for kind in kinds:
         geocode_yandex = geocoder.yandex(
-            coordinates,
+            crd,
             method='reverse',
-            kind='house',
+            kind=kind,
             lang='RU',
             key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
         )
         yandex_address_array = geocode_yandex.address.split(',')
-        locality = yandex_address_array[2]
-        street = yandex_address_array[3]
-        house = yandex_address_array[4]
-    return {
-        'city': locality,
-        'street': street,
-        'house': house,
-    }
+        if len(yandex_address_array) == 4:
+            result = {
+                'city': yandex_address_array[1],
+                'street': yandex_address_array[2],
+                'house': yandex_address_array[3],
+            }
+            geocode_mapquest = geocoder.mapquest(
+                crd,
+                method='reverse',
+                key=settings.MAPQUEST_MAP_KEY
+            )
+            result.update({'postal': geocode_mapquest.postal})
+        else:
+            result = {
+                'city': yandex_address_array[2],
+            }
+    return result
