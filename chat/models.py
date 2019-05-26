@@ -71,7 +71,7 @@ class Chat(models.Model):
         if self.is_private_house:
             return f'Postal chat, {self.postal_code}'
         else:
-            return f'{self.street}, {self.house_number}'
+            return f'{self.city}, {self.street}, {self.house_number}'
 
     class Meta:
         verbose_name = 'Chat'

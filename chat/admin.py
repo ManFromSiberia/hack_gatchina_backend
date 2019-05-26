@@ -14,4 +14,7 @@ class ChatCoordinateForm(forms.ModelForm):
 
 @admin.register(Chat)
 class ChatAdmin(admin.ModelAdmin):
-    pass
+    fields = ('social_network', 'city', 'city_district', 'postal_code', 'street', 'house_number', 'residential_complex',
+              'chat_id', 'chat_invite_link', 'coordinates', 'is_private_house')
+    search_fields = ('street', 'city', 'house_number')
+    form = ChatCoordinateForm
