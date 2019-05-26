@@ -21,8 +21,8 @@ class Parser:
         content = soup.find('div', class_='inCenter')
         title = content.find('h1', class_='padd_b20').text.strip()
         text = content.find('div', class_='F17').text.strip()
-        adresses = self.__get_address(text)
-        return {'title': title, 'text': text, 'news_id': news_id, 'addresses': adresses}
+        addresses = self.__get_address(text)
+        return {'title': title, 'text': text, 'news_id': news_id, 'addresses': addresses}
 
     def __get_last_link(self, html):
         soup = BeautifulSoup(html, 'lxml')
@@ -65,14 +65,18 @@ class Parser:
                 part = part.strip()
                 if re.findall(word, part):
                     street = part.split(' ')[0]
-                    part = part.replace('д. ', 'д.')
+                    part = part.replace('д. ', '')
+                    part = part.replace('д.', '')
                     results.append('ул. ' + part)
                 elif re.findall(number, part):
-                    results.append('ул. ' + street + ' д.' + part)
+                    results.append('ул. ' + street + ' ' + part)
                 elif '-' in part:
                     digits = part.split('-')
                     for i in range(int(digits[0]), int(digits[1]) + 1):
-                        results.append('ул. ' + street + ' д.' + str(i))
+                        results.append('ул. ' + street + ' ' + str(i))
+        results = ['Гатчина ' + res for res in results]
+        if results == []:
+            results.append('Гатчина')
         return results
 
     def test_nlp(self, text):
