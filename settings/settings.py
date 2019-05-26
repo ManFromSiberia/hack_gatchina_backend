@@ -142,11 +142,11 @@ GOOGLE_MAP_API_KEY = "AIzaSyAYCZGof7SigzxC5ko7HEJMFRBpEqS1j2s"
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
-    'check_news': {
-        'task': 'parser.tasks.check_news',
-        'schedule': crontab(minute='*/3'),
-    },
-    'demo':{
+    # 'check_news': {
+    #     'task': 'parser.tasks.check_news',
+    #     'schedule': crontab(minute='*/3'),
+    # },
+    'demo': {
         'task': 'parser.tasks.demo',
         'schedule': crontab(minute='*/1')
     }

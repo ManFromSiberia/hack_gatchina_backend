@@ -51,6 +51,12 @@ class Chat(models.Model):
         blank=True,
         null=True
     )
+    chat_id = models.CharField(
+        'Chat id',
+        max_length=255,
+        blank=True,
+        null=True
+    )
     coordinates = PointField(
         'Chat coordinate',
         blank=True,

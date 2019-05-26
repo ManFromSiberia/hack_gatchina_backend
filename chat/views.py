@@ -108,7 +108,10 @@ async def create_channel(chat_name):
     response = requests.get(
         f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/exportChatInviteLink?chat_id=-100{buff.id}'
     )
-    return json.loads(response.text).get('result')
+    return {
+        'chat_id': f'-100{buff.id}',
+        'invite_link': json.loads(response.text).get('result')
+    }
 
 
 class ChatsFromCoordinatesView(APIView):
@@ -138,7 +141,7 @@ class CreateNewChatView(APIView):
 
             if not is_private_house:
                 chat_name = f"Чат {address.get('street')}, {address.get('house')}"
-                chat_identification = asyncio.new_event_loop().run_until_complete(create_channel(chat_name))
+                chat_identifications = asyncio.new_event_loop().run_until_complete(create_channel(chat_name))
 
                 chat = Chat.objects.create(
                     social_network=social_network,
@@ -148,11 +151,12 @@ class CreateNewChatView(APIView):
                     street=address.get('street'),
                     house_number=address.get('house'),
                     coordinates=Point(coordinates),
-                    chat_invite_link=chat_identification
+                    chat_invite_link=chat_identifications.get('invite_link'),
+                    chat_id=chat_identifications.get('chat_id')
                 )
             else:
                 chat_name = f"Чат почтовый индекс {address.get('postal')}"
-                chat_identification = asyncio.new_event_loop().run_until_complete(create_channel(chat_name))
+                chat_identifications = asyncio.new_event_loop().run_until_complete(create_channel(chat_name))
 
                 chat = Chat.objects.create(
                     social_network=social_network,
@@ -161,7 +165,8 @@ class CreateNewChatView(APIView):
                     postal_code=address.get('postal'),
                     coordinates=Point(coordinates),
                     is_private_house=is_private_house,
-                    chat_invite_link=chat_identification
+                    chat_invite_link=chat_identifications.get('invite_link'),
+                    chat_id=chat_identifications.get('chat_id')
                 )
             return Response(ChatDetailSerializer(chat).data)
         else:
