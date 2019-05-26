@@ -135,10 +135,8 @@ MAP_WIDGETS = {
          'componentRestrictions': {'country': 'ru'}}),
         ("markerFitZoom", 12),
     ),
-    "GOOGLE_MAP_API_KEY": "AIzaSyAYCZGof7SigzxC5ko7HEJMFRBpEqS1j2s"
 }
 GOOGLE_MAP_API_KEY = "AIzaSyAYCZGof7SigzxC5ko7HEJMFRBpEqS1j2s"
-
 
 from celery.schedules import crontab
 
