@@ -83,7 +83,8 @@ async def create_channel(chat_name):
     await client.connect()
     channel = await client(CreateChannelRequest(
         chat_name,
-        'Специально созданный чат для вас, сервисом Мой Двор',
+        'Специально созданный чат для вас, сервисом Мой Двор\n'
+        'По хештегу #жалоба вы можете написать свою претензию, которая будет направлена администрации',
         broadcast=False,
         megagroup=True
     ))
@@ -150,7 +151,7 @@ class CreateNewChatView(APIView):
                     postal_code=address.get('postal'),
                     street=address.get('street'),
                     house_number=address.get('house'),
-                    coordinates=Point(coordinates),
+                    coordinates=Point(list(reversed(coordinates))),
                     chat_invite_link=chat_identifications.get('invite_link'),
                     chat_id=chat_identifications.get('chat_id')
                 )
@@ -163,7 +164,7 @@ class CreateNewChatView(APIView):
                     city=address.get('city'),
                     city_district=address.get('district'),
                     postal_code=address.get('postal'),
-                    coordinates=Point(coordinates),
+                    coordinates=Point(list(reversed(coordinates))),
                     is_private_house=is_private_house,
                     chat_invite_link=chat_identifications.get('invite_link'),
                     chat_id=chat_identifications.get('chat_id')
