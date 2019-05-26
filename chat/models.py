@@ -45,9 +45,11 @@ class Chat(models.Model):
         blank=True,
         null=True
     )
-    app_chat_identification = models.CharField(
-        'App chat id',
-        max_length=255
+    chat_invite_link = models.CharField(
+        'Chat invite link',
+        max_length=255,
+        blank=True,
+        null=True
     )
     coordinates = PointField(
         'Chat coordinate',
