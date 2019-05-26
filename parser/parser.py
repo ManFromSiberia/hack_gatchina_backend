@@ -73,6 +73,9 @@ class Parser:
                     digits = part.split('-')
                     for i in range(int(digits[0]), int(digits[1]) + 1):
                         results.append('ул. ' + street + ' д.' + str(i))
+        results = ['Гатчина ' + res for res in results]
+        if results == []:
+            results.append('Гатчина')
         return results
 
     def test_nlp(self, text):
