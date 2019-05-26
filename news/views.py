@@ -37,6 +37,13 @@ class NewsUpdateView(APIView):
                             links.append(item.get('chat_id'))
                     links = set(links)
                     links = list(links)
+            else:
+                link = news.chats.all().values('chat_id')
+                for item in link:
+                    if item:
+                        links.append(item.get('chat_id'))
+                links = set(links)
+                links = list(links)
             result.append({
                 'id': news.id,
                 'title': news.title,
@@ -95,13 +102,13 @@ def get_address_from_coordinates_gtn(crd):
         yandex_address_array = geocode_yandex.address.split(',')
         if len(yandex_address_array) > 3:
             result = {
-                'city': yandex_address_array[2],
-                'street': yandex_address_array[3],
-                'house': yandex_address_array[4],
+                'city': yandex_address_array[2].strip(),
+                'street': yandex_address_array[3].strip(),
+                'house': yandex_address_array[4].strip(),
             }
         else:
             result = {
-                'city': yandex_address_array[2],
+                'city': yandex_address_array[2].strip(),
             }
         return result
 
@@ -121,9 +128,9 @@ def get_address_from_coordinates_spb(crd):
         print(yandex_address_array)
         if len(yandex_address_array) == 4:
             result = {
-                'city': yandex_address_array[1],
-                'street': yandex_address_array[2],
-                'house': yandex_address_array[3],
+                'city': yandex_address_array[1].strip(),
+                'street': yandex_address_array[2].strip(),
+                'house': yandex_address_array[3].strip(),
             }
             geocode_mapquest = geocoder.mapquest(
                 crd,
@@ -133,7 +140,7 @@ def get_address_from_coordinates_spb(crd):
             result.update({'postal': geocode_mapquest.postal})
         else:
             result = {
-                'city': yandex_address_array[1],
+                'city': yandex_address_array[1].strip(),
             }
     return result
 
