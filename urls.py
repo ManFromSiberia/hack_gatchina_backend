@@ -20,6 +20,7 @@ from django.urls import path, include
 main_api = [
     path('chat/', include('chat.urls')),
     path('news/', include('news.urls')),
+    path('complaint/', include('complaint.urls'))
 ]
 
 urlpatterns = [

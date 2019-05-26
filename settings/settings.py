@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'chat',
     'parser',
     'news',
+    'complaint'
 ]
 
 MIDDLEWARE = [
