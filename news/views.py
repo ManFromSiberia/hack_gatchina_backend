@@ -1,4 +1,5 @@
 import geocoder
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,27 +17,32 @@ class NewsUpdateView(APIView):
             links = []
             if news.address:
                 for address in news.address:
-                    if towns[0] in address:
-                        crd = get_coordinates_from_address_gtn(address)
-                        adrs = get_address_from_coordinates_gtn(crd)
-                    elif towns[1] in address:
-                        crd = get_coordinates_from_address_spb(address)
-                        adrs = get_address_from_coordinates_spb(crd)
-                    chats = Chat.objects.all()
-                    try:
-                        link = chats.filter(city=adrs.get('city'), street=adrs.get('street'),
-                                            house_number=adrs.get('house')).values('chat_id')
-                    except AttributeError:
-                        link = chats.filter(city=adrs.get('city')).values('chat_id')
-                    links = link
+                    if address == 'Гатчина':
+                        link = Chat.objects.filter(city=address.strip()).values('chat_id')
+                    else:
+                        if towns[0] in address:
+                            crd = get_coordinates_from_address_gtn(address)
+                            adrs = get_address_from_coordinates_gtn(crd)
+                        elif towns[1] in address:
+                            crd = get_coordinates_from_address_spb(address)
+                            adrs = get_address_from_coordinates_spb(crd)
+                        chats = Chat.objects.all()
+                        try:
+                            link = chats.filter(city=adrs.get('city').strip(), street=adrs.get('street').strip(),
+                                                house_number=adrs.get('house').strip()).values('chat_id')
+                        except AttributeError:
+                            link = chats.filter(city=adrs.get('city').strip()).values('chat_id')
+                    for item in link:
+                        if item:
+                            links.append(item.get('chat_id'))
+                    links = set(links)
+                    links = list(links)
             result.append({
+                'id': news.id,
                 'title': news.title,
                 'text': news.text,
                 'chat_links': links,
             })
-            news.is_new = False
-            news.save()
-
         return Response(result)
 
 
@@ -112,6 +118,7 @@ def get_address_from_coordinates_spb(crd):
             key='7bb41e4d-5a27-4b8c-a856-ee56d3284019'
         )
         yandex_address_array = geocode_yandex.address.split(',')
+        print(yandex_address_array)
         if len(yandex_address_array) == 4:
             result = {
                 'city': yandex_address_array[1],
@@ -126,6 +133,16 @@ def get_address_from_coordinates_spb(crd):
             result.update({'postal': geocode_mapquest.postal})
         else:
             result = {
-                'city': yandex_address_array[2],
+                'city': yandex_address_array[1],
             }
     return result
+
+
+class NewsPostCompleteView(APIView):
+    def post(self, request, *args, **kwargs):
+        news_id = kwargs.get('id')
+        news = News.objects.get(id=news_id)
+        news.is_new = False
+        news.save()
+        return Response('Ok', status=status.HTTP_200_OK)
+
