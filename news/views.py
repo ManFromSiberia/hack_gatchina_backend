@@ -42,12 +42,10 @@ class NewsUpdateView(APIView):
                     chats = Chat.objects.all()
                     try:
                         link = chats.filter(city=adrs.get('city'), street=adrs.get('street'),
-                                            house_number=adrs.get('house'))
+                                            house_number=adrs.get('house')).values('chat_id')
                     except:
-                        link = chats.filter(city=adrs.get('city'))
-                    links.extend(link)
-            if not links:
-                links = Chat.objects.all()
+                        link = chats.filter(city=adrs.get('city')).values('chat_id')
+                    links = link
             result.append({
                 'title': news.title,
                 'text': news.text,
